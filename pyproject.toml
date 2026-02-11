@@ -1,0 +1,14 @@
+[project]
+name = "interpretability-notes"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "einops>=0.8.2",
+    "jaxtyping>=0.3.7",
+    "torch>=2.10.0",
+    "torchaudio>=2.10.0",
+    "torchvision>=0.25.0",
+    "transformer-lens>=2.17.0",
+]
