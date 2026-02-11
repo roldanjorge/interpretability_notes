@@ -78,28 +78,33 @@ print(tokens.shape)
 print(reference_gpt2.to_str_tokens(tokens))
 
 
-# %% Step 2: Map tokens to logits
+# %% 
+# Step 2: Map tokens to logits
 logits, cache = reference_gpt2.run_with_cache(tokens)
 print(logits.shape)
 
 
-# %% Step 3: Convert the logits to a distribution with a softmax
+# %% 
+# Step 3: Convert the logits to a distribution with a softmax
 probs = logits.softmax(dim=-1)
 print(probs.shape)
 
 
-# %% Bonus step: What is the most likely next token at each position?
+# %% 
+# Bonus step: What is the most likely next token at each position?
 most_likely_next_tokens = reference_gpt2.tokenizer.batch_decode(logits.argmax(dim=-1)[0])
 
 print(list(zip(reference_gpt2.to_str_tokens(tokens), most_likely_next_tokens)))
 
-# %% Step 4: Map distribution to a token
+# %% 
+# Step 4: Map distribution to a token
 next_token = logits[0, -1].argmax(dim=-1)
 next_char = reference_gpt2.to_string(next_token)
 print(repr(next_char))
 
 
-# %% Step 5: Add this to the end of the input, re-run
+# %% 
+# Step 5: Add this to the end of the input, re-run
 print(f"Sequence so far: {reference_gpt2.to_string(tokens)[0]!r}")
 
 for i in range(10):
