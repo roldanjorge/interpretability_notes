@@ -1,33 +1,14 @@
-# %% Setup imports and device
+# %% 
+# Setup imports and device
 import math
-import os
-import sys
-from collections import defaultdict
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Callable
-
-import datasets
-import einops
-import numpy as np
-import torch as t
-import torch.nn as nn
-import wandb
-from jaxtyping import Float, Int
-from rich import print as rprint
-from rich.table import Table
-from torch import Tensor
-from torch.utils.data import DataLoader
 from tqdm.notebook import tqdm
 from transformer_lens import HookedTransformer
-from transformer_lens.utils import gelu_new, tokenize_and_concatenate
-from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
-
 from src.arena3.ch1_1.section2.config import Config
+from src.arena3.ch1_1.section2.demo_transformer import DemoTransformer
 from src.arena3.utils.device import device
+from src.arena3.utils.utils import get_log_probs
 
 
-MAIN = __name__ == "__main__"
 
 # %% 
 # Explore the GPT-2 tokenizer
@@ -43,7 +24,6 @@ sorted_vocab = sorted(list(reference_gpt2.tokenizer.vocab.items()), key=lambda n
 
 
 # %%
-# ======================================
 #  Text generation 
 # ======================================
 # Step 1: Convert text to tokens
@@ -88,4 +68,29 @@ print(reference_gpt2.cfg)
 # Custom config
 cfg = Config()
 print(cfg)
+
+# Demo Transformer 
+# ==========================================
+demo_gpt2 = DemoTransformer(Config(debug=False)).to(device)
+demo_gpt2.load_state_dict(reference_gpt2.state_dict(), strict=False)
+demo_logits = demo_gpt2(tokens)
+print(demo_logits)
+
+
+# %% 
+# Get log-probs for demo_gpt2
+pred_log_probs = get_log_probs(demo_logits, tokens)
+print(f"Avg cross entropy loss: {-pred_log_probs.mean():.4f}")
+print(f"Avg cross entropy loss for uniform distribution: {math.log(demo_gpt2.cfg.d_vocab):4f}")
+print(f"Avg probability assigned to correct token: {pred_log_probs.exp().mean():4f}")
+
+# %%
+# Generate text with demo_gpt2
+test_string = """Mitigating the risk of extinction from AI should be a global priority alongside other societal-scale risks such as""" 
+for i in tqdm(range(100)):
+    test_tokens = reference_gpt2.to_tokens(test_string).to(device)
+    demo_logits = demo_gpt2(test_tokens)
+    test_string += reference_gpt2.tokenizer.decode(demo_logits[-1, -1].argmax())
+
+print(test_string)
 # %%
