@@ -23,28 +23,13 @@ from transformer_lens.utils import gelu_new, tokenize_and_concatenate
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
 
 
-from src.embed import Embed
-from src.pos_embed import PosEmbed
-from src.transformer_block import TransformerBlock
-from src.layer_norm import LayerNorm
-from src.unembed import Unembed
-
-device = t.device(
-    "mps" if t.backends.mps.is_available() else "cuda" if t.cuda.is_available() else "cpu"
-)
-
-@dataclass
-class Config:
-    d_model: int = 768
-    debug: bool = True
-    layer_norm_eps: float = 1e-5
-    d_vocab: int = 50257
-    init_range: float = 0.02
-    n_ctx: int = 1024
-    d_head: int = 64
-    d_mlp: int = 3072
-    n_heads: int = 12
-    n_layers: int = 12
+from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.embed import Embed
+from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.pos_embed import PosEmbed
+from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.transformer_block import TransformerBlock
+from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.layer_norm import LayerNorm
+from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.unembed import Unembed
+from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.config import Config
+from src.arena3.utils.device import device
 
 
 cfg = Config()

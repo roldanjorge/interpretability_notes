@@ -4,8 +4,9 @@ from torch import Tensor
 import einops
 from transformer_lens import HookedTransformer
 from jaxtyping import Float, Int
-from src.config import Config
-from tests.mlp_tests import rand_float_test, load_gpt2_test
+
+from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.config import Config
+from tests.arena3 import rand_float_test, load_gpt2_test
 from transformer_lens.utils import gelu_new
 
 class MLP(nn.Module):

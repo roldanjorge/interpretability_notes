@@ -1,14 +1,19 @@
-from src.config import Config
+"""Test utilities for arena3 transformer modules.
+
+Exports rand_float_test, rand_int_test, and load_gpt2_test for use by
+source modules (e.g. mlp.py imports these at module level).
+"""
+
 import torch as t
 
 device = t.device(
     "mps" if t.backends.mps.is_available() else "cuda" if t.cuda.is_available() else "cpu"
 )
 
-cfg = Config()
-print(cfg)
-# %% Tests
+
 def rand_float_test(cls, shape):
+    from config import Config
+
     cfg = Config(debug=True)
     layer = cls(cfg).to(device)
     random_input = t.randn(shape).to(device)
@@ -20,6 +25,8 @@ def rand_float_test(cls, shape):
 
 
 def rand_int_test(cls, shape):
+    from config import Config
+
     cfg = Config(debug=True)
     layer = cls(cfg).to(device)
     random_input = t.randint(100, 1000, shape).to(device)
@@ -31,6 +38,8 @@ def rand_int_test(cls, shape):
 
 
 def load_gpt2_test(cls, gpt2_layer, input):
+    from config import Config
+
     cfg = Config(debug=True)
     layer = cls(cfg).to(device)
     layer.load_state_dict(gpt2_layer.state_dict(), strict=False)
@@ -41,7 +50,7 @@ def load_gpt2_test(cls, gpt2_layer, input):
     print("Output shape:", output.shape)
     try:
         reference_output = gpt2_layer(input)
-    except:
+    except Exception:
         reference_output = gpt2_layer(input, input, input)
     print("Reference output shape:", reference_output.shape, "\n")
     comparison = t.isclose(output, reference_output, atol=1e-4, rtol=1e-3)
