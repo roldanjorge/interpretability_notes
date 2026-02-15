@@ -1,34 +1,7 @@
 # %% Setup imports and device
-import math
-import os
-import sys
-from collections import defaultdict
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Callable
-
-import datasets
-import einops
-import numpy as np
 import torch as t
-import torch.nn as nn
-import wandb
-from jaxtyping import Float, Int
-from rich import print as rprint
-from rich.table import Table
-from torch import Tensor
-from torch.utils.data import DataLoader
-from tqdm.notebook import tqdm
 from transformer_lens import HookedTransformer
-from transformer_lens.utils import gelu_new, tokenize_and_concatenate
-from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
-
-device = t.device(
-    "mps" if t.backends.mps.is_available() else "cuda" if t.cuda.is_available() else "cpu"
-)
-
-
-MAIN = __name__ == "__main__"
+from src.arena3.utils.device import device
 
 # %% 
 # ======================================
