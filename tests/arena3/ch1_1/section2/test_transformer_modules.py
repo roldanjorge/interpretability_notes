@@ -1,7 +1,7 @@
 """Comprehensive test suite for GPT-2 transformer modules.
 
 47 tests across 9 test classes covering every module in the
-2_clean_transformer_implementation directory.
+section2 directory.
 """
 
 import dataclasses
@@ -11,15 +11,15 @@ import torch as t
 import torch.nn as nn
 from transformer_lens.utils import gelu_new
 
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.attention import Attention
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.config import Config
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.demo_transformer import DemoTransformer
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.embed import Embed
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.layer_norm import LayerNorm
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.mlp import MLP
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.pos_embed import PosEmbed
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.transformer_block import TransformerBlock
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.unembed import Unembed
+from src.arena3.ch1_1.section2.attention import Attention
+from src.arena3.ch1_1.section2.config import Config
+from src.arena3.ch1_1.section2.demo_transformer import DemoTransformer
+from src.arena3.ch1_1.section2.embed import Embed
+from src.arena3.ch1_1.section2.layer_norm import LayerNorm
+from src.arena3.ch1_1.section2.mlp import MLP
+from src.arena3.ch1_1.section2.pos_embed import PosEmbed
+from src.arena3.ch1_1.section2.transformer_block import TransformerBlock
+from src.arena3.ch1_1.section2.unembed import Unembed
 
 
 # ---------------------------------------------------------------------------

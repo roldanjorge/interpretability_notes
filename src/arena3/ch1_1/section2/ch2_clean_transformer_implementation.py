@@ -23,7 +23,7 @@ from transformer_lens import HookedTransformer
 from transformer_lens.utils import gelu_new, tokenize_and_concatenate
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
 
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.config import Config
+from src.arena3.ch1_1.section2.config import Config
 from src.arena3.utils.device import device
 
 

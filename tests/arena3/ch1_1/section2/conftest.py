@@ -3,7 +3,7 @@
 import pytest
 import torch as t
 
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.config import Config
+from src.arena3.ch1_1.section2.config import Config
 
 
 @pytest.fixture

@@ -5,7 +5,7 @@ import einops
 from transformer_lens import HookedTransformer
 from jaxtyping import Float, Int
 
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.config import Config
+from src.arena3.ch1_1.section2.config import Config
 from tests.arena3 import rand_float_test, load_gpt2_test
 from transformer_lens.utils import gelu_new
 

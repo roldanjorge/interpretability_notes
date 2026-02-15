@@ -6,7 +6,7 @@ import torch.nn as nn
 from jaxtyping import Float
 from torch import Tensor
 
-from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.config import Config
+from src.arena3.ch1_1.section2.config import Config
 from src.arena3.utils.device import device
 
 

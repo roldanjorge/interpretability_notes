@@ -26,7 +26,7 @@ tests/
   arena3/                   # test utilities (rand_float_test, rand_int_test, load_gpt2_test)
 ```
 
-Chapters follow the ARENA numbering with a `ch` prefix for valid Python identifiers: `ch1_1_transformer_from_scratch/`, with subsections like `ch1_inputs_outputs_of_transformer/` and `ch2_clean_transformer_implementation/`.
+Chapters follow the ARENA numbering: `ch1_1/` (transformer from scratch), with subsections like `section1/` (inputs & outputs) and `section2/` (clean implementation).
 
 ## Architecture Notes
 
@@ -40,4 +40,4 @@ Chapters follow the ARENA numbering with a `ch` prefix for valid Python identifi
 
 - `torch` is imported as `t` (not `torch`)
 - Device is resolved via `src.arena3.utils.device` or inline
-- All imports use absolute paths (e.g., `from src.arena3.ch1_1_transformer_from_scratch.ch2_clean_transformer_implementation.config import Config`)
+- All imports use absolute paths (e.g., `from src.arena3.ch1_1.section2.config import Config`)
