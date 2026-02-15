@@ -30,6 +30,7 @@ pythonpath = ["."]
 
 [tool.coverage.run]
 source = ["src/arena3/ch1_1/section2"]
+omit = ["**/section2_clean_transformer_implementation.py"]
 
 [tool.coverage.report]
 exclude_lines = [
