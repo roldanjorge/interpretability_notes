@@ -94,3 +94,19 @@ for i in tqdm(range(100)):
 
 print(test_string)
 # %%
+# Visualize attention patterns with circuitsvis
+import circuitsvis as cv
+from IPython.display import display
+
+display(
+    cv.attention.attention_patterns(
+        tokens=reference_gpt2.to_str_tokens(reference_text), attention=cache["pattern", 0][0]
+    )
+)
+# %%
+display(
+    cv.attention.attention_heads(
+        tokens=reference_gpt2.to_str_tokens(reference_text), attention=cache["pattern", 0][0]
+    )
+)
+
