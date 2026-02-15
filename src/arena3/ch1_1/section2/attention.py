@@ -1,5 +1,4 @@
 # %%
-from dataclasses import dataclass
 import einops
 import torch as t
 import torch.nn as nn
@@ -32,7 +31,6 @@ class Attention(nn.Module):
         nn.init.normal_(self.W_O, std=self.cfg.init_range)
         self.register_buffer("IGNORE", t.tensor(float("-inf"), dtype=t.float32, device=device))
 
-    # JR Solution
     def forward(
         self, normalized_resid_pre: Float[Tensor, "batch posn d_model"]
     ) -> Float[Tensor, "batch posn d_model"]:
