@@ -11,6 +11,7 @@ dependencies = [
     "jaxtyping>=0.3.7",
     "torch>=2.10.0",
     "torchaudio>=2.10.0",
+    "torchinfo>=1.8.0",
     "torchvision>=0.25.0",
     "transformer-lens>=2.17.0",
 ]
@@ -29,8 +30,16 @@ packages = ["src"]
 pythonpath = ["."]
 
 [tool.coverage.run]
-source = ["src/arena3/ch1_1/section2"]
-omit = ["**/section2_clean_transformer_implementation.py"]
+source = [
+    "src/arena3/ch0_2/section1",
+    "src/arena3/ch1_1/section2",
+]
+omit = [
+    "**/section2_clean_transformer_implementation.py",
+    "**/section1_making_your_own_modules.py",
+    "**/src/arena3/ch1_1/section1/section1_inputs_outputs_of_transformer.py",
+    "**/src/arena3/ch1_1/section3/**"
+]
 
 [tool.coverage.report]
 exclude_lines = [
