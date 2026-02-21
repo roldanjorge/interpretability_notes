@@ -27,6 +27,14 @@
             "args": ["-xvs", "${file}::${selectedText}"],
             "cwd": "${workspaceFolder}",
             "justMyCode": true
+        },
+        {
+            "name": "Run: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": false 
         }
     ]
 }
