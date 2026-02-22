@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [arena_3.0, main]
+  pull_request:
+    branches: [arena_3.0, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ env.PYTHON_VERSION }}" }
+      - run: uv sync --group dev
+      - run: uv run ruff check src/ tests/
+      - run: uv run ruff format --check src/ tests/
+      - run: uv run mypy src/arena3/
+
+  test:
+    name: Tests (CPU, skip GPT-2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ env.PYTHON_VERSION }}" }
+      - run: uv sync --group dev
+      - run: |
+          uv run pytest tests/ -m "not slow" \
+            --tb=short --cov=src --cov-report=xml -q
+      - uses: codecov/codecov-action@v5
+        if: always()
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+  security:
+    name: Security (ruff S rules)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ env.PYTHON_VERSION }}" }
+      - run: uv sync --group dev
+      - run: uv run ruff check src/ tests/ --select S --output-format=github

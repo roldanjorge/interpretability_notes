@@ -19,7 +19,14 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8.0", "pytest-cov>=5.0"]
+dev = [
+    "commitizen>=4.4.1",
+    "mypy>=1.15.0",
+    "pre-commit>=4.5.1",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.15.2",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -30,6 +37,9 @@ packages = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+markers = [
+    "slow: marks tests requiring GPT-2 download (deselect with '-m not slow')",
+]
 
 [tool.coverage.run]
 source = [
@@ -49,3 +59,105 @@ exclude_lines = [
     "if __name__",
     "^cfg = Config",
 ]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+exclude = [".venv", ".git", "__pycache__", "data", "*.ipynb"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "UP",       # pyupgrade
+    "B",        # bugbear
+    "C4",       # comprehensions
+    "RUF",      # ruff-specific
+    "PL",       # pylint (replaces standalone pylint)
+    "S",        # bandit security (replaces standalone bandit)
+    "N",        # pep8-naming
+    "SIM",      # simplify
+    "T20",      # flake8-print
+]
+ignore = [
+    # jaxtyping false positives (Float[Tensor, "batch posn"] strings)
+    "F722", "F821",
+    # intentional study repo conventions
+    "T201",    # print() fine in notebooks
+    "S101",    # assert fine in tests/study code
+    "ERA001",  # reference solution comments are intentional
+    "E402",    # # %% cells have mid-file imports
+    "E501",    # formatter enforces line length, not linter
+    # ML layers legitimately have many params
+    "PLR0913", "PLR2004",
+    # project convention: `import torch as t` (documented in CLAUDE.md)
+    "N812",
+    # ML convention: uppercase variable names (W_Q, K, V, Z)
+    "N803", "N806",
+    # not a security concern in ML research
+    "S311",
+    # ML training loop pattern: `for x, y in loader: x, y = x.to(device), y.to(device)`
+    "PLW2901",
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "PLR2004", "F401", "PLC0415", "E741", "RUF059", "B006", "F811", "E731", "B905", "RUF005", "PLC0206", "F841"]
+"src/**/section*.py" = ["E402", "T201", "PLR0402", "C414", "B007", "B905", "RUF005"]
+"tests/**/solutions.py" = ["B006", "F811", "E731", "B905", "RUF005", "RUF059", "PLR0912"]
+"src/**/config.py" = ["N815"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+known-third-party = ["torch", "einops", "jaxtyping", "transformer_lens", "plotly", "circuitsvis"]
+force-sort-within-sections = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+# Exclude: section narrative scripts (study code) and in-progress section3
+exclude = [
+    "src/arena3/ch1_1/section3/",
+    "src/arena3/ch0_2/section2/section2_training_neural_networks\\.py",
+    "src/arena3/ch1_1/section1/section1_inputs_outputs_of_transformer\\.py",
+    "src/arena3/ch1_1/section2/section2_clean_transformer_implementation\\.py",
+]
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+check_untyped_defs = true
+# Don't enforce typed defs globally: jaxtyping string annotations
+# (Float[Tensor, "batch pos"]) cause thousands of false errors under strict mode
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+    "torch", "torch.*", "torchvision", "torchvision.*",
+    "torchaudio", "torchaudio.*",
+    "einops", "einops.*", "jaxtyping", "jaxtyping.*",
+    "transformer_lens", "transformer_lens.*",
+    "circuitsvis", "circuitsvis.*",
+    "plotly", "plotly.*", "torchinfo", "torchinfo.*",
+    "tqdm", "tqdm.*", "datasets", "datasets.*",
+    "pandas", "pandas.*", "wandb", "wandb.*",
+]
+ignore_missing_imports = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+version_files = ["pyproject.toml:version"]
+tag_format = "v$version"
+update_changelog_on_bump = true
+changelog_file = "CHANGELOG.md"
+changelog_incremental = true
