@@ -1,10 +1,10 @@
 import torch as t
+from torch import nn
 import torch.nn.functional as F
-import torch.nn as nn
 
-from src.arena3.ch0_2.section1.rely import ReLU
-from src.arena3.ch0_2.section1.linear import Linear
 from src.arena3.ch0_2.section1.flatten import Flatten
+from src.arena3.ch0_2.section1.linear import Linear
+from src.arena3.ch0_2.section1.rely import ReLU
 from src.arena3.ch0_2.section1.simple_mlp import SimpleMLP
 
 
@@ -45,6 +45,7 @@ def compare_module_attributes(custom_module, reference_module):
                 f"Expected shape: {ref_buffers[name].shape}, Actual shape: {custom_buffers[name].shape}"
             )
 
+
 # --------------------------------------------------------------
 # ReLU
 # --------------------------------------------------------------
@@ -72,7 +73,6 @@ class TestLinear:
         expected = official(x)
         t.testing.assert_close(actual, expected)
         print("All tests in `test_linear_forward` passed!")
-
 
     def test_linear_parameters(self, bias=False):
         l = Linear(2, 3, bias=bias)
@@ -165,11 +165,11 @@ class TestFlatten:
 
 
 # --------------------------------------------------------------
-# SimpMLP 
+# SimpMLP
 # --------------------------------------------------------------
 class TestSimpleMLP:
     def test_mlp_module(self):
-        import tests.arena3.ch0_2.section1.solutions as solutions
+        from tests.arena3.ch0_2.section1 import solutions
 
         mlp: nn.Module = SimpleMLP()
         num_params = sum(p.numel() for p in mlp.parameters())
@@ -180,9 +180,8 @@ class TestSimpleMLP:
         compare_module_attributes(mlp, mlp_sol)
         print("All tests in `test_mlp_module` passed!")
 
-
     def test_mlp_forward(self):
-        import tests.arena3.ch0_2.section1.solutions as solutions
+        from tests.arena3.ch0_2.section1 import solutions
 
         mlp: nn.Module = SimpleMLP()
         mlp_sol = solutions.SimpleMLP()

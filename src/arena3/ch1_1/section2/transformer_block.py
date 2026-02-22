@@ -1,11 +1,11 @@
-import torch.nn as nn
 from jaxtyping import Float
 from torch import Tensor
+import torch.nn as nn
+
+from src.arena3.ch1_1.section2.attention import Attention
 from src.arena3.ch1_1.section2.config import Config
 from src.arena3.ch1_1.section2.layer_norm import LayerNorm
-from src.arena3.ch1_1.section2.attention import Attention
 from src.arena3.ch1_1.section2.mlp import MLP
-
 
 cfg = Config()
 
@@ -29,7 +29,7 @@ class TransformerBlock(nn.Module):
         pre_mlp = self.ln2(new_resid_pre)
         post_mlp = self.mlp(pre_mlp)
         out = new_resid_pre + post_mlp
-        return out 
+        return out  # type: ignore[no-any-return]
 
     # Reference solution
     # def forward(

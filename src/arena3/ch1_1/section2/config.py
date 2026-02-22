@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class Config:
     d_model: int = 768

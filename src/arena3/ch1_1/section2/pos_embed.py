@@ -1,12 +1,14 @@
 # %%
 import einops
-import torch as t
-import torch.nn as nn
 from jaxtyping import Float, Int
+import torch as t
 from torch import Tensor
+import torch.nn as nn
+
 from src.arena3.ch1_1.section2.config import Config
 
 cfg = Config()
+
 
 class PosEmbed(nn.Module):
     def __init__(self, cfg: Config):

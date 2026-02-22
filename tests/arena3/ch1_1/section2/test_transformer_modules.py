@@ -8,8 +8,7 @@ import dataclasses
 
 import einops
 import torch as t
-import torch.nn as nn
-from transformer_lens.utils import gelu_new
+from torch import nn
 
 from src.arena3.ch1_1.section2.attention import Attention
 from src.arena3.ch1_1.section2.config import Config
@@ -182,10 +181,26 @@ class TestLayerNorm:
 class TestAttention:
     def test_param_shapes(self, small_cfg):
         attn = Attention(small_cfg)
-        assert attn.W_Q.shape == (small_cfg.n_heads, small_cfg.d_model, small_cfg.d_head)
-        assert attn.W_K.shape == (small_cfg.n_heads, small_cfg.d_model, small_cfg.d_head)
-        assert attn.W_V.shape == (small_cfg.n_heads, small_cfg.d_model, small_cfg.d_head)
-        assert attn.W_O.shape == (small_cfg.n_heads, small_cfg.d_head, small_cfg.d_model)
+        assert attn.W_Q.shape == (
+            small_cfg.n_heads,
+            small_cfg.d_model,
+            small_cfg.d_head,
+        )
+        assert attn.W_K.shape == (
+            small_cfg.n_heads,
+            small_cfg.d_model,
+            small_cfg.d_head,
+        )
+        assert attn.W_V.shape == (
+            small_cfg.n_heads,
+            small_cfg.d_model,
+            small_cfg.d_head,
+        )
+        assert attn.W_O.shape == (
+            small_cfg.n_heads,
+            small_cfg.d_head,
+            small_cfg.d_model,
+        )
         assert attn.b_Q.shape == (small_cfg.n_heads, small_cfg.d_head)
         assert attn.b_K.shape == (small_cfg.n_heads, small_cfg.d_head)
         assert attn.b_V.shape == (small_cfg.n_heads, small_cfg.d_head)

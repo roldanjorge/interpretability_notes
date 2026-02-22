@@ -1,15 +1,13 @@
-import torch.nn as nn
 from jaxtyping import Float, Int
 from torch import Tensor
+import torch.nn as nn
 
-
+from src.arena3.ch1_1.section2.config import Config
 from src.arena3.ch1_1.section2.embed import Embed
+from src.arena3.ch1_1.section2.layer_norm import LayerNorm
 from src.arena3.ch1_1.section2.pos_embed import PosEmbed
 from src.arena3.ch1_1.section2.transformer_block import TransformerBlock
-from src.arena3.ch1_1.section2.layer_norm import LayerNorm
 from src.arena3.ch1_1.section2.unembed import Unembed
-from src.arena3.ch1_1.section2.config import Config
-
 
 cfg = Config()
 
@@ -32,4 +30,4 @@ class DemoTransformer(nn.Module):
             x = block(x)
         x = self.ln_final(x)
         out = self.unembed(x)
-        return out
+        return out  # type: ignore[no-any-return]

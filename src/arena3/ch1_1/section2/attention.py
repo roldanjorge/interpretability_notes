@@ -1,15 +1,15 @@
 # %%
 import einops
-import torch as t
-import torch.nn as nn
 from jaxtyping import Float
+import torch as t
 from torch import Tensor
+import torch.nn as nn
 
 from src.arena3.ch1_1.section2.config import Config
 from src.arena3.utils.device import device
 
-
 cfg = Config()
+
 
 class Attention(nn.Module):
     IGNORE: Float[Tensor, ""]
@@ -24,7 +24,7 @@ class Attention(nn.Module):
         self.b_Q = nn.Parameter(t.zeros((cfg.n_heads, cfg.d_head)))
         self.b_K = nn.Parameter(t.zeros((cfg.n_heads, cfg.d_head)))
         self.b_V = nn.Parameter(t.zeros((cfg.n_heads, cfg.d_head)))
-        self.b_O = nn.Parameter(t.zeros((cfg.d_model)))
+        self.b_O = nn.Parameter(t.zeros(cfg.d_model))
         nn.init.normal_(self.W_Q, std=self.cfg.init_range)
         nn.init.normal_(self.W_K, std=self.cfg.init_range)
         nn.init.normal_(self.W_V, std=self.cfg.init_range)
@@ -37,17 +37,17 @@ class Attention(nn.Module):
         # Calculate query, key, and value vectors
         q = (
             einops.einsum(
-                normalized_resid_pre, 
-                self.W_Q, 
-                "batch posn d_model, n_heads d_model d_head -> batch posn n_heads d_head"
-            ) 
-            + self.b_Q 
+                normalized_resid_pre,
+                self.W_Q,
+                "batch posn d_model, n_heads d_model d_head -> batch posn n_heads d_head",
+            )
+            + self.b_Q
         )
         k = (
             einops.einsum(
                 normalized_resid_pre,
                 self.W_K,
-                "batch posn d_model, n_heads d_model d_head -> batch posn n_heads d_head"
+                "batch posn d_model, n_heads d_model d_head -> batch posn n_heads d_head",
             )
             + self.b_K
         )
@@ -55,7 +55,7 @@ class Attention(nn.Module):
             einops.einsum(
                 normalized_resid_pre,
                 self.W_V,
-                "batch posn d_model, n_heads d_model d_head -> batch posn n_heads d_head"
+                "batch posn d_model, n_heads d_model d_head -> batch posn n_heads d_head",
             )
             + self.b_V
         )
@@ -79,27 +79,26 @@ class Attention(nn.Module):
 
         # Calculate output (by applying matrix W_O and summing over heads, then adding bias b_O)
         attn_out = (
-                einops.einsum(
+            einops.einsum(
                 z,
                 self.W_O,
-                "batch posn_q n_heads d_head, n_heads d_head d_model -> batch posn_q d_model"
+                "batch posn_q n_heads d_head, n_heads d_head d_model -> batch posn_q d_model",
             )
             + self.b_O
         )
 
         return attn_out
 
-
     def apply_causal_mask(
-            self,
-            attn_scores: Float[Tensor, "batch n_heads query_pos key_pos"],
-        ) -> Float[Tensor, "batch n_heads query_pos key_pos"]:
-            """
-            Applies a causal mask to attention scores, and returns masked scores.
-            """
-            # Define a mask that is True for all positions we want to set probabilities to zero for
-            all_ones = t.ones(attn_scores.size(-2), attn_scores.size(-1), device=attn_scores.device)
-            mask = t.triu(all_ones, diagonal=1).bool()
-            # Apply the mask to attention scores, then return the masked scores
-            attn_scores.masked_fill_(mask, self.IGNORE)
-            return attn_scores
+        self,
+        attn_scores: Float[Tensor, "batch n_heads query_pos key_pos"],
+    ) -> Float[Tensor, "batch n_heads query_pos key_pos"]:
+        """
+        Applies a causal mask to attention scores, and returns masked scores.
+        """
+        # Define a mask that is True for all positions we want to set probabilities to zero for
+        all_ones = t.ones(attn_scores.size(-2), attn_scores.size(-1), device=attn_scores.device)
+        mask = t.triu(all_ones, diagonal=1).bool()
+        # Apply the mask to attention scores, then return the masked scores
+        attn_scores.masked_fill_(mask, self.IGNORE)
+        return attn_scores

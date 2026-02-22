@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import torch as t
 from plotly.subplots import make_subplots
+import torch as t
 
 CONFIG = {"displaylogo": False}
 
@@ -38,8 +38,6 @@ update_layout_set = {
     "margin",
     "xaxis_visible",
     "yaxis_visible",
-    "bargap",
-    "bargroupgap",
     "xaxis_tickangle",
 }
 
@@ -65,10 +63,7 @@ def imshow(tensor, renderer=None, **kwargs):
     kwargs_post = {k: v for k, v in kwargs.items() if k in update_layout_set}
     kwargs_pre = {k: v for k, v in kwargs.items() if k not in update_layout_set}
     return_fig = kwargs_pre.pop("return_fig", False)
-    if "facet_labels" in kwargs_pre:
-        facet_labels = kwargs_pre.pop("facet_labels")
-    else:
-        facet_labels = None
+    facet_labels = kwargs_pre.pop("facet_labels") if "facet_labels" in kwargs_pre else None
     if "color_continuous_scale" not in kwargs_pre:
         kwargs_pre["color_continuous_scale"] = "RdBu"
     if "color_continuous_midpoint" not in kwargs_pre:
@@ -110,11 +105,11 @@ def line(y: t.Tensor | list[t.Tensor], renderer=None, return_fig=False, **kwargs
         kwargs_post["margin"] = dict.fromkeys(list("tblr"), kwargs_post["margin"])
     if "xaxis_tickvals" in kwargs_pre:
         tickvals = kwargs_pre.pop("xaxis_tickvals")
-        kwargs_post["xaxis"] = dict(
-            tickmode="array",
-            tickvals=kwargs_pre.get("x", np.arange(len(tickvals))),
-            ticktext=tickvals,
-        )
+        kwargs_post["xaxis"] = {
+            "tickmode": "array",
+            "tickvals": kwargs_pre.get("x", np.arange(len(tickvals))),
+            "ticktext": tickvals,
+        }
     if "hovermode" not in kwargs_post:
         kwargs_post["hovermode"] = "x unified"
     if kwargs_pre.pop("use_secondary_yaxis", False):
@@ -122,9 +117,9 @@ def line(y: t.Tensor | list[t.Tensor], renderer=None, return_fig=False, **kwargs
         y0, y1 = to_numpy(y[0]), to_numpy(y[1])
         if "labels" in kwargs_pre:
             labels: dict = kwargs_pre.pop("labels")
-            kwargs_post["yaxis_title_text"] = labels.get("y1", None)
-            kwargs_post["yaxis2_title_text"] = labels.get("y2", None)
-            kwargs_post["xaxis_title_text"] = labels.get("x", None)
+            kwargs_post["yaxis_title_text"] = labels.get("y1")
+            kwargs_post["yaxis2_title_text"] = labels.get("y2")
+            kwargs_post["xaxis_title_text"] = labels.get("x")
         for k in ["title", "template", "width", "height"]:
             if k in kwargs_pre:
                 kwargs_post[k] = kwargs_pre.pop(k)
@@ -142,7 +137,7 @@ def line(y: t.Tensor | list[t.Tensor], renderer=None, return_fig=False, **kwargs
     else:
         y = (
             list(map(to_numpy, y))
-            if isinstance(y, list) and not (isinstance(y[0], int) or isinstance(y[0], float))
+            if isinstance(y, list) and not isinstance(y[0], (int, float))
             else to_numpy(y)
         )
         x = np.linspace(0, x_max, len(y)) if x_max is not None else kwargs_pre.pop("x", None)
@@ -175,10 +170,10 @@ def scatter(x, y, renderer=None, return_fig=False, **kwargs):
         elif re.match("(x|y)=", add_line):
             try:
                 c = float(add_line.split("=")[1])
-            except:
+            except Exception as e:
                 raise ValueError(
                     f"Unrecognized add_line: {add_line}. Please use either 'x=y' or 'x=c' or 'y=c' for some float c."
-                )
+                ) from e
             x, y = ([c, c], yrange) if add_line[0] == "x" else (xrange, [c, c])
             fig.add_trace(go.Scatter(mode="lines", x=x, y=y, showlegend=False))
         else:
@@ -228,7 +223,11 @@ def plot_train_loss_and_test_accuracy_from_metrics(metrics: pd.DataFrame, title:
         y=[train_metrics["train_loss"].values, test_metrics["accuracy"].values],
         x=[train_metrics["step"].values, test_metrics["step"].values],
         names=["Training", "Testing"],
-        labels={"x": "Num samples seen", "y1": "Cross entropy loss", "y2": "Test accuracy"},
+        labels={
+            "x": "Num samples seen",
+            "y1": "Cross entropy loss",
+            "y2": "Test accuracy",
+        },
         use_secondary_yaxis=True,
         title=title,
         width=800,

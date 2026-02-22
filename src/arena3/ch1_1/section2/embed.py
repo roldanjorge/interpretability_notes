@@ -1,10 +1,9 @@
-from dataclasses import dataclass
-import torch as t
-import torch.nn as nn
 from jaxtyping import Float, Int
+import torch as t
 from torch import Tensor
-from src.arena3.ch1_1.section2.config import Config
+import torch.nn as nn
 
+from src.arena3.ch1_1.section2.config import Config
 
 cfg = Config()
 
@@ -20,5 +19,5 @@ class Embed(nn.Module):
         self, tokens: Int[Tensor, "batch position"]
     ) -> Float[Tensor, "batch position d_model"]:
         tokens_embed = nn.functional.one_hot(tokens, num_classes=self.cfg.d_vocab).to(t.float32)
-        out = t.matmul(tokens_embed,  self.W_E)
+        out = t.matmul(tokens_embed, self.W_E)
         return out

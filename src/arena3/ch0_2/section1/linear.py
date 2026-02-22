@@ -1,10 +1,11 @@
 # %%
 # imports
-import torch.nn as nn
 import einops
 import numpy as np
 import torch as t
 from torch import Tensor
+import torch.nn as nn
+
 
 # %%
 # Linear implementation

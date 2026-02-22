@@ -1,30 +1,17 @@
 # %%
 # Setup imports
-import json
-import sys
-from collections import namedtuple
 from dataclasses import dataclass
-from pathlib import Path
 
-import einops
 import numpy as np
 import torch as t
-import torch.nn as nn
 import torch.nn.functional as F
-import torchinfo
-from IPython.display import display
-from jaxtyping import Float, Int
-from PIL import Image
-from rich import print as rprint
-from rich.table import Table
-from torch import Tensor
 from torch.utils.data import DataLoader, Subset
-from torchvision import datasets, models, transforms
+from torchvision import datasets, transforms
 from tqdm.notebook import tqdm
 
-from src.arena3.utils.plotly_utils import line
-from src.arena3.utils.device import device
 from src.arena3.ch0_2.section1.simple_mlp import SimpleMLP
+from src.arena3.utils.device import device
+from src.arena3.utils.plotly_utils import line
 
 # %%
 # Setup MNIST helpers and dataloaders
@@ -40,12 +27,8 @@ def get_mnist(trainset_size: int = 10_000, testset_size: int = 1_000) -> tuple[S
     """Returns a subset of MNIST training data."""
 
     # Get original datasets, which are downloaded to "./data" for future use
-    mnist_trainset = datasets.MNIST(
-        "./data", train=True, download=True, transform=MNIST_TRANSFORM
-    )
-    mnist_testset = datasets.MNIST(
-        "./data", train=False, download=True, transform=MNIST_TRANSFORM
-    )
+    mnist_trainset = datasets.MNIST("./data", train=True, download=True, transform=MNIST_TRANSFORM)
+    mnist_testset = datasets.MNIST("./data", train=False, download=True, transform=MNIST_TRANSFORM)
 
     # # Return a subset of the original datasets
     mnist_trainset = Subset(mnist_trainset, indices=range(trainset_size))
@@ -72,7 +55,7 @@ for img, label in mnist_testset:
 
 t.testing.assert_close(img, img_batch[0])
 assert label == label_batch[0].item()
-# %% 
+# %%
 # Training loop
 model = SimpleMLP().to(device)
 
@@ -110,6 +93,8 @@ line(
     title="SimpleMLP training on MNIST",
     width=700,
 )
+
+
 # %%
 # Training loop with args dataclass
 @dataclass
@@ -208,7 +193,7 @@ def train(args: SimpleMLPTrainingArgs) -> tuple[list[float], SimpleMLP]:
             pbar.set_postfix(epoch=f"{epoch + 1}/{args.epochs}", loss=f"{loss:.3f}")
 
         # Validation loop - JR
-        with t.inference_mode(): 
+        with t.inference_mode():
             pbar = tqdm(mnist_testloader)
             accuracy_epoch = []
             for imgs, labels in pbar:
@@ -225,26 +210,33 @@ def train(args: SimpleMLPTrainingArgs) -> tuple[list[float], SimpleMLP]:
         #     imgs, labels = imgs.to(device), labels.to(device)
         #     with t.inference_mode():
         #         logits = model(imgs)
-            
+
         #     # Compute num correct by comparing argmaxed logits to true labels
         #     predictions = t.argmax(logits, dim=-1)
         #     num_correct_classifications += (predictions == labels).sum().item()
-        
+
         # # Compute & log total accuracy
         # accuracy = num_correct_classifications / len(mnist_testset)
         # accuracy_list.append(accuracy)
 
-
     return loss_list, accuracy_list, model
+
 
 args = SimpleMLPTrainingArgs()
 loss_list, accuracy_list, model = train(args)
 
 line(
-    y=[loss_list, [0.1] + accuracy_list],  # we start by assuming a uniform accuracy of 10%
+    y=[
+        loss_list,
+        [0.1] + accuracy_list,
+    ],  # we start by assuming a uniform accuracy of 10%
     use_secondary_yaxis=True,
     x_max=args.epochs * len(mnist_trainset),
-    labels={"x": "Num examples seen", "y1": "Cross entropy loss", "y2": "Test Accuracy"},
+    labels={
+        "x": "Num examples seen",
+        "y1": "Cross entropy loss",
+        "y2": "Test Accuracy",
+    },
     title="SimpleMLP training on MNIST",
     width=800,
 )

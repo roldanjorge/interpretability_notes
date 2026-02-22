@@ -33,9 +33,7 @@ class TestGetLogProbs:
         """Output should match hand-computed log probs for a small example."""
         d_vocab = 4
         # batch=1, posn=3 -> output should be (1, 2)
-        logits = t.tensor([[[1.0, 2.0, 3.0, 4.0],
-                            [5.0, 6.0, 7.0, 8.0],
-                            [9.0, 10.0, 11.0, 12.0]]])
+        logits = t.tensor([[[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 11.0, 12.0]]])
         tokens = t.tensor([[0, 2, 1]])  # next-token targets are tokens[:, 1:] = [2, 1]
 
         out = get_log_probs(logits, tokens)

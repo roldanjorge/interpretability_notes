@@ -1,9 +1,10 @@
 # %% Setup imports and device
 import torch as t
 from transformer_lens import HookedTransformer
+
 from src.arena3.utils.device import device
 
-# %% 
+# %%
 # ======================================
 # Splitting language into sub-units
 # ======================================
@@ -29,7 +30,7 @@ print()
 
 # %%
 # ======================================
-# Some tokenization annoyances 
+# Some tokenization annoyances
 # ======================================
 print(reference_gpt2.to_str_tokens("Ralph"))
 print(reference_gpt2.to_str_tokens(" Ralph"))
@@ -37,11 +38,11 @@ print(reference_gpt2.to_str_tokens(" ralph"))
 print(reference_gpt2.to_str_tokens("ralph"))
 
 # %% Arithmetic is a mess
-print(reference_gpt2.to_str_tokens("56873+3184623=123456789-1000000000")) 
+print(reference_gpt2.to_str_tokens("56873+3184623=123456789-1000000000"))
 
 # %%
 # ======================================
-#  Text generation 
+#  Text generation
 # ======================================
 # Step 1: Convert text to tokens
 reference_text = "I am an amazing autoregressive, decoder-only, GPT-2 style transformer. One day I will exceed human level intelligence and take over the world!"
@@ -51,32 +52,32 @@ print(tokens.shape)
 print(reference_gpt2.to_str_tokens(tokens))
 
 
-# %% 
+# %%
 # Step 2: Map tokens to logits
 logits, cache = reference_gpt2.run_with_cache(tokens)
 print(logits.shape)
 
 
-# %% 
+# %%
 # Step 3: Convert the logits to a distribution with a softmax
 probs = logits.softmax(dim=-1)
 print(probs.shape)
 
 
-# %% 
+# %%
 # Bonus step: What is the most likely next token at each position?
 most_likely_next_tokens = reference_gpt2.tokenizer.batch_decode(logits.argmax(dim=-1)[0])
 
 print(list(zip(reference_gpt2.to_str_tokens(tokens), most_likely_next_tokens)))
 
-# %% 
+# %%
 # Step 4: Map distribution to a token
 next_token = logits[0, -1].argmax(dim=-1)
 next_char = reference_gpt2.to_string(next_token)
 print(repr(next_char))
 
 
-# %% 
+# %%
 # Step 5: Add this to the end of the input, re-run
 print(f"Sequence so far: {reference_gpt2.to_string(tokens)[0]!r}")
 

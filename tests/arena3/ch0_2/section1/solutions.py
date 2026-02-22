@@ -1,26 +1,16 @@
 # %%
-import json
-import sys
 from collections import namedtuple
 from dataclasses import dataclass
-from pathlib import Path
 
 import einops
+from jaxtyping import Float, Int
 import numpy as np
 import torch as t
-import torch.nn as nn
+from torch import Tensor, nn
 import torch.nn.functional as F
-import torchinfo
-from IPython.display import display
-from jaxtyping import Float, Int
-from PIL import Image
-from rich import print as rprint
-from rich.table import Table
-from torch import Tensor
 from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, models, transforms
 from tqdm.notebook import tqdm
-
 
 MAIN = __name__ == "__main__"
 
@@ -31,7 +21,6 @@ MAIN = __name__ == "__main__"
 class ReLU(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         return t.maximum(x, t.tensor(0.0))
-
 
 
 # %%
@@ -80,7 +69,6 @@ class Linear(nn.Module):
         )
 
 
-
 # %%
 
 
@@ -124,7 +112,6 @@ class SimpleMLP(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         return self.linear2(self.relu(self.linear1(self.flatten(x))))
-
 
 
 # %%
@@ -211,7 +198,6 @@ def train(args: SimpleMLPTrainingArgs) -> tuple[list[float], SimpleMLP]:
             pbar.set_postfix(epoch=f"{epoch + 1}/{args.epochs}", loss=f"{loss:.3f}")
 
     return loss_list, model
-
 
 
 # %%
@@ -312,7 +298,6 @@ class Conv2d(nn.Module):
     def extra_repr(self) -> str:
         keys = ["in_channels", "out_channels", "kernel_size", "stride", "padding"]
         return ", ".join([f"{key}={getattr(self, key)}" for key in keys])
-
 
 
 # %%
@@ -428,7 +413,6 @@ class BatchNorm2d(nn.Module):
         )
 
 
-
 # %%
 
 
@@ -517,7 +501,6 @@ class BlockGroup(nn.Module):
         return self.blocks(x)
 
 
-
 # %%
 
 
@@ -569,7 +552,6 @@ class ResNet34(nn.Module):
         post_block_groups = self.residual_layers(post_first_conv_block)
         logits = self.out_layers(post_block_groups)
         return logits
-
 
 
 # %%
@@ -633,7 +615,6 @@ def predict(
     return probabilities.max(dim=-1)
 
 
-
 # %%
 
 
@@ -674,7 +655,6 @@ def remove_hooks(module: nn.Module) -> None:
     module._forward_pre_hooks.clear()
 
 
-
 # %%
 
 
@@ -701,7 +681,6 @@ def get_resnet_for_feature_extraction(n_classes: int) -> ResNet34:
     my_resnet.out_layers[-1] = Linear(my_resnet.out_features_per_group[-1], n_classes)
 
     return my_resnet
-
 
 
 # %%
@@ -792,7 +771,6 @@ def train(args: ResNetTrainingArgs) -> tuple[list[float], list[float], ResNet34]
     return loss_list, accuracy_list, model
 
 
-
 # %%
 
 test_input = t.tensor(
@@ -880,7 +858,6 @@ test_cases = [
 ]
 
 
-
 # %%
 
 
@@ -898,7 +875,6 @@ def as_strided_trace(mat: Float[Tensor, "i j"]) -> Float[Tensor, ""]:
     return diag.sum()
 
 
-
 # %%
 
 
@@ -911,9 +887,9 @@ def as_strided_mv(mat: Float[Tensor, "i j"], vec: Float[Tensor, "j"]) -> Float[T
     strideV = vec.stride()
 
     assert len(sizeM) == 2, f"mat1 should be 2D, not {len(sizeM)}"
-    assert (
-        sizeM[1] == sizeV[0]
-    ), f"mat{list(sizeM)}, vec{list(sizeV)} not compatible for multiplication"
+    assert sizeM[1] == sizeV[0], (
+        f"mat{list(sizeM)}, vec{list(sizeV)} not compatible for multiplication"
+    )
 
     vec_expanded = vec.as_strided(mat.shape, (0, strideV[0]))
 
@@ -929,9 +905,9 @@ def as_strided_mm(matA: Float[Tensor, "i j"], matB: Float[Tensor, "j k"]) -> Flo
     """
     assert len(matA.shape) == 2, f"mat1 should be 2D, not {len(matA.shape)}"
     assert len(matB.shape) == 2, f"mat2 should be 2D, not {len(matB.shape)}"
-    assert (
-        matA.shape[1] == matB.shape[0]
-    ), f"mat1{list(matA.shape)}, mat2{list(matB.shape)} not compatible for multiplication"
+    assert matA.shape[1] == matB.shape[0], (
+        f"mat1{list(matA.shape)}, mat2{list(matB.shape)} not compatible for multiplication"
+    )
 
     # Get the matrix strides, and matrix dims
     sA0, sA1 = matA.stride()
@@ -948,7 +924,6 @@ def as_strided_mm(matA: Float[Tensor, "i j"], matB: Float[Tensor, "j k"]) -> Flo
     matA_expanded = matA.as_strided(expanded_size, matA_expanded_stride)
     matB_expanded = matB.as_strided(expanded_size, matB_expanded_stride)
     return (matA_expanded * matB_expanded).sum(dim=1)
-
 
 
 # %%
@@ -980,7 +955,6 @@ def conv1d_minimal_simple(
     return einops.einsum(x_strided, weights, "ow kw, kw -> ow")
 
 
-
 # %%
 
 
@@ -1008,7 +982,6 @@ def conv1d_minimal(
     x_strided = x.as_strided(size=x_new_shape, stride=x_new_stride)
 
     return einops.einsum(x_strided, weights, "b ic ow kw, oc ic kw -> b oc ow")
-
 
 
 # %%
@@ -1039,7 +1012,6 @@ def conv2d_minimal(
     return einops.einsum(x_strided, weights, "b ic oh ow kh kw, oc ic kh kw -> b oc oh ow")
 
 
-
 # %%
 
 
@@ -1053,7 +1025,6 @@ def pad1d(
         x  # note we can't use `left:-right`, because `right` might be zero
     )
     return output
-
 
 
 # %%
@@ -1072,7 +1043,6 @@ def pad2d(
     output = x.new_full(size=(B, C, top + H + bottom, left + W + right), fill_value=pad_value)
     output[..., top : top + H, left : left + W] = x
     return output
-
 
 
 # %%
@@ -1106,7 +1076,6 @@ def conv1d(
     x_strided = x_padded.as_strided(size=x_new_shape, stride=x_new_stride)
 
     return einops.einsum(x_strided, weights, "b ic ow kw, oc ic kw -> b oc ow")
-
 
 
 # %%
@@ -1164,7 +1133,6 @@ def conv2d(
     return einops.einsum(x_strided, weights, "b ic oh ow kh kw, oc ic kh kw -> b oc oh ow")
 
 
-
 # %%
 
 
@@ -1186,7 +1154,12 @@ def maxpool2d(
 
     # Get padded version of x
     x_padded = pad2d(
-        x, left=padding_w, right=padding_w, top=padding_h, bottom=padding_h, pad_value=-t.inf
+        x,
+        left=padding_w,
+        right=padding_w,
+        top=padding_h,
+        bottom=padding_h,
+        pad_value=-t.inf,
     )
 
     # Calculate output height and width for x

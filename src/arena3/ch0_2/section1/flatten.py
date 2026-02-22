@@ -1,10 +1,9 @@
 # %%
 # imports
-import torch.nn as nn
-import einops
-import numpy as np
 import torch as t
 from torch import Tensor
+import torch.nn as nn
+
 
 # %%
 # Flatten implementation
@@ -29,7 +28,7 @@ class Flatten(nn.Module):
         shape_right = shape[end_dim + 1 :]
         shape_middle = t.prod(t.tensor(shape[start_dim : end_dim + 1])).item()
 
-        return t.reshape(input, shape_left + (shape_middle,) + shape_right)
+        return t.reshape(input, (*shape_left, int(shape_middle), *shape_right))
 
     def extra_repr(self) -> str:
         return ", ".join([f"{key}={getattr(self, key)}" for key in ["start_dim", "end_dim"]])
