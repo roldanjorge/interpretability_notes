@@ -110,3 +110,5 @@ display(
         attention=cache["pattern", 0][0],
     )
 )
+
+# %%
