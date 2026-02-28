@@ -72,6 +72,9 @@ class TransformerTrainer:
         self.model.eval()
         accuracy = np.nan
         total_correct = 0
+        total_tokens = 0
+        progress_bar = tqdm(total=len(self.test_loader), desc="Evaluating")
+
         for i, batch in enumerate(self.test_loader):
             tokens = batch["tokens"].to(self.device)
             logits = self.model(tokens)[
@@ -80,8 +83,10 @@ class TransformerTrainer:
             pred_tokens = logits.argmax(dim=-1)
             correct = (pred_tokens == tokens[:, 1:]).sum().item()
             total_correct += correct
+            total_tokens += tokens.shape[0] * (tokens.shape[1] - 1)  # Total predicted tokens
+            progress_bar.update()
 
-        accuracy = total_correct / len(self.test_loader.dataset)
+        accuracy = total_correct / total_tokens if total_tokens > 0 else 0
         wandb.log({"test_accuracy": accuracy, "step": self.step})
         self.model.train()
         return accuracy
