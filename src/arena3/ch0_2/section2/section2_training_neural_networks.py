@@ -54,7 +54,8 @@ for img, label in mnist_testset:
     break
 
 t.testing.assert_close(img, img_batch[0])
-assert label == label_batch[0].item()
+if label != label_batch[0].item():
+    raise ValueError(f"Expected label {label_batch[0].item()}, got {label}")
 # %%
 # Training loop
 model = SimpleMLP().to(device)

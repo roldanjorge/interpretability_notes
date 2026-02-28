@@ -113,7 +113,8 @@ def line(y: t.Tensor | list[t.Tensor], renderer=None, return_fig=False, **kwargs
     if "hovermode" not in kwargs_post:
         kwargs_post["hovermode"] = "x unified"
     if kwargs_pre.pop("use_secondary_yaxis", False):
-        assert len(y) == 2, "Must provide two y-axes for dual-y-axis plot"
+        if len(y) != 2:
+            raise ValueError("Must provide two y-axes for dual-y-axis plot")
         y0, y1 = to_numpy(y[0]), to_numpy(y[1])
         if "labels" in kwargs_pre:
             labels: dict = kwargs_pre.pop("labels")
@@ -214,7 +215,8 @@ def hist(tensor, renderer=None, return_fig=False, **kwargs):
 # Old function - not using now that PyTorch Lightning has been removed
 def plot_train_loss_and_test_accuracy_from_metrics(metrics: pd.DataFrame, title: str) -> None:
     # Separate train and test metrics from the dataframe containing all metrics
-    assert "accuracy" in metrics.columns, "Did you log the accuracy metric?"
+    if "accuracy" not in metrics.columns:
+        raise ValueError("Did you log the accuracy metric?")
     train_metrics = metrics[~metrics["train_loss"].isna()]
     test_metrics = metrics[~metrics["accuracy"].isna()]
 

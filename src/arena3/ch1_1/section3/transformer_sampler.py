@@ -58,11 +58,16 @@ class TransformerSampler:
         frequency_penalty=0.0,
         seed=None,
     ) -> int:
-        assert input_ids.ndim == 1, "input_ids should be a 1D sequence of token ids"
-        assert temperature >= 0, "Temperature should be non-negative"
-        assert 0 <= top_p <= 1.0, "Top-p must be a probability"
-        assert top_k >= 0, "Top-k must be non-negative"
-        assert not (top_p != 0 and top_k != 0), "At most one of top-p and top-k supported"
+        if input_ids.ndim != 1:
+            raise ValueError("input_ids should be a 1D sequence of token ids")
+        if temperature < 0:
+            raise ValueError("Temperature should be non-negative")
+        if not (0 <= top_p <= 1.0):
+            raise ValueError("Top-p must be a probability")
+        if top_k < 0:
+            raise ValueError("Top-k must be non-negative")
+        if top_p != 0 and top_k != 0:
+            raise ValueError("At most one of top-p and top-k supported")
 
         # Set random seeds for reproducibility
         if seed is not None:
