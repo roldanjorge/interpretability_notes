@@ -10,6 +10,7 @@ import wandb
 from src.arena3.ch1_1.section2.demo_transformer import DemoTransformer
 from src.arena3.ch1_1.section3.training_args import TransformerTrainingArgs
 from src.arena3.ch1_1.section3.transformer_sampler import TransformerSampler
+from src.arena3.utils.device import device
 from src.arena3.utils.utils import get_log_probs
 
 
@@ -22,6 +23,7 @@ class TransformerTrainer:
         dataset_dict: dict[str, t.utils.data.Dataset],
     ):
         super().__init__()
+        self.device = device
         self.model = model
         self.args = args
         self.sampler = TransformerSampler(self.model, tokenizer)
@@ -51,16 +53,15 @@ class TransformerTrainer:
 
         Remember that `batch` is a dictionary with the single key 'tokens'.
         """
-        loss = None
-
-        logits = self.model(batch["tokens"])
-        pred_log_probs = get_log_probs(logits, batch["tokens"])
+        tokens = batch["tokens"].to(self.device)
+        logits = self.model(tokens)
+        pred_log_probs = get_log_probs(logits, tokens)
         loss = -pred_log_probs.mean()
         loss.backward()
         self.optimizer.step()
         self.optimizer.zero_grad()
-        wandb.log({"loss": loss.item(), "step": self.step})
         self.step += 1
+        wandb.log({"train_loss": loss.item(), "step": self.step})
         return loss
 
     @t.inference_mode()
@@ -105,7 +106,7 @@ class TransformerTrainer:
                 if i >= self.args.max_steps_per_epoch:
                     break
 
-            accuracy = self.evaluate()
+            # accuracy = self.evaluate()
             sample_text = self.sampler.sample("Once upon a time", max_tokens_generated=50)
             print(sample_text)
 
