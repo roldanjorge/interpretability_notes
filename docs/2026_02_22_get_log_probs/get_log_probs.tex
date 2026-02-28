@@ -123,6 +123,181 @@ The last position has no ground-truth next token to score against, so the output
 has shape $\text{posn} - 1$ rather than $\text{posn}$.
 
 % =============================================
+\section{How the Two Slices Work}
+% =============================================
+
+\subsection{\texttt{log\_probs[:, :-1]} --- Slicing a Three-Dimensional Tensor}
+
+\texttt{log\_probs} has shape $[\text{batch},\ \text{posn},\ d_\text{vocab}]$
+--- three axes.
+The notation \texttt{[:, :-1]} supplies only \textbf{two} explicit index
+expressions. Python and PyTorch apply a simple rule:
+
+\begin{quote}
+\textit{Any trailing dimension not mentioned in the index expression receives
+an implicit \texttt{:} --- meaning ``keep every element along that axis''.}
+\end{quote}
+
+\noindent Therefore \texttt{log\_probs[:, :-1]} is \emph{exactly} equivalent
+to \texttt{log\_probs[:, :-1, :]}. The three index slots map to axes as follows:
+
+\begin{center}
+\begin{tabular}{clll}
+\toprule
+\textbf{Slot} & \textbf{Value} & \textbf{Axis} & \textbf{Effect} \\
+\midrule
+1st & \texttt{:}          & dim 0 --- batch       & Keep every batch item (unchanged) \\
+2nd & \texttt{:-1}        & dim 1 --- posn        & Keep indices $0, 1, \ldots, \text{posn}-2$;
+                                                     \emph{drop} the last position \\
+3rd & \texttt{:} (implicit) & dim 2 --- $d_\text{vocab}$ & Keep \emph{every} vocabulary entry (unchanged) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip\noindent
+\textbf{Shape: $[\text{batch},\ \text{posn},\ d_\text{vocab}]$
+$\;\longrightarrow\;$ $[\text{batch},\ \text{posn}-1,\ d_\text{vocab}]$}
+
+\medskip\noindent
+The critical insight is that the third dimension is \textbf{entirely
+untouched}. The slice only removes one ``slice of pages'' along the position
+axis. For every surviving (batch, posn) pair the full $d_\text{vocab}$-wide
+row of log probabilities is preserved intact. Visualise
+\texttt{log\_probs} as a stack of $\text{batch}$ matrices, each of size
+$\text{posn} \times d_\text{vocab}$. The operation removes the \emph{last
+row} from every matrix while leaving each row's full width untouched:
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  kept/.style={draw, minimum width=1.15cm, minimum height=0.65cm,
+               align=center, font=\ttfamily\scriptsize, fill=bluelight},
+  drop/.style={draw, minimum width=1.15cm, minimum height=0.65cm,
+               align=center, font=\ttfamily\scriptsize,
+               fill=redlight, text=gray},
+  lbl/.style={font=\scriptsize\bfseries},
+]
+%% Column headers (vocab dimension)
+\foreach \c/\v in {0/$v_0$, 1/$v_1$, 2/$v_2$, 3/$\cdots$, 4/$v_{V}$}{
+  \node[lbl] at (\c*1.25, 4.3) {\v};
+}
+\node[font=\scriptsize, gray] at (2*1.25, 4.85)
+  {$\longleftarrow\quad d_\text{vocab}\text{ entries (dim 2)}\quad\longrightarrow$};
+
+%% Kept rows (positions 0 … posn-2)
+\foreach \r/\rl in {0/pos 0, 1/pos 1, 2/pos 2}{
+  \node[font=\scriptsize, anchor=east] at (-0.55, 3.1-\r*0.85) {\rl};
+  \foreach \c in {0,1,2,3,4}{
+    \node[kept] at (\c*1.25, 3.1-\r*0.85) {};
+  }
+}
+
+%% Dropped row (last position)
+\node[font=\scriptsize, anchor=east] at (-0.55, 3.1-3*0.85) {pos $T{-}1$};
+\foreach \c in {0,1,2,3,4}{
+  \node[drop] at (\c*1.25, 3.1-3*0.85) {};
+}
+\draw[red!70!black, very thick]
+  (-0.6, 3.1-3*0.85-0.32) -- (4.6*1.25, 3.1-3*0.85+0.32);
+\node[font=\scriptsize, red!70!black] at (2*1.25, 3.1-3*0.85-0.52)
+  {entire last row dropped by \texttt{:-1}};
+
+%% Right brace: kept rows
+\draw[decorate, decoration={brace, amplitude=5pt, mirror}, thick, gray]
+  ($(4.55*1.25, 3.1+0.32)$) -- ($(4.55*1.25, 3.1-2*0.85-0.32)$)
+  node[midway, right=9pt, font=\scriptsize, gray]
+    {$\text{posn}-1$ rows kept};
+
+%% y-axis label
+\node[font=\scriptsize, gray, rotate=90] at (-1.3, 3.1-1.5*0.85)
+  {positions (dim 1)};
+\end{tikzpicture}
+\caption{Effect of \texttt{log\_probs[:, :-1]} on one batch item.
+The slice operates \emph{only} on dim 1 (position axis):
+it discards the last row (pos $T{-}1$, red).
+The entire width of dim 2 --- all $d_\text{vocab}$ log-probability
+entries --- is preserved for every kept row (blue).
+Dim 0 (batch) is also untouched; the same operation applies identically
+to every item in the batch.}
+\end{figure}
+
+% - - - - - - - - - - - - - - - - - - - - - -
+\subsection{\texttt{tokens[:, 1:]} --- Slicing a Two-Dimensional Tensor}
+% - - - - - - - - - - - - - - - - - - - - - -
+
+\texttt{tokens} has shape $[\text{batch},\ \text{posn}]$ --- two axes.
+The slice \texttt{[:, 1:]} maps to:
+
+\begin{center}
+\begin{tabular}{clll}
+\toprule
+\textbf{Slot} & \textbf{Value} & \textbf{Axis} & \textbf{Effect} \\
+\midrule
+1st & \texttt{:}  & dim 0 --- batch & Keep every batch item \\
+2nd & \texttt{1:} & dim 1 --- posn  & Keep indices $1, 2, \ldots, \text{posn}-1$;
+                                      \emph{drop} index 0 (the first token) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip\noindent
+\textbf{Shape: $[\text{batch},\ \text{posn}]$
+$\;\longrightarrow\;$ $[\text{batch},\ \text{posn}-1]$}
+
+\medskip\noindent
+The slice expression \texttt{1:} is standard Python \emph{start-from-1-to-end}
+notation. In general \texttt{a:b} selects elements whose indices satisfy
+$a \le i < b$; omitting the upper bound means ``go all the way to the end''.
+So \texttt{1:} retains every index $\ge 1$, dropping only index 0.
+
+\medskip\noindent
+The semantic effect is a \textbf{left-shift by one position}: element $i$ in
+the result is the element that was at position $i+1$ in the original tensor.
+Concretely, for the sequence
+$[\texttt{"The"},\ \texttt{"cat"},\ \texttt{"sat"},\ \texttt{"."}]$
+with token IDs $[1, 2, 3, 4]$:
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{4}{c}{\textbf{Position in dim 1}} \\
+ & 0 & 1 & 2 & 3 \\
+\midrule
+\textbf{Before} \texttt{tokens} &
+  \texttt{"The"} (1) & \texttt{"cat"} (2) & \texttt{"sat"} (3) & \texttt{"."} (4) \\
+\midrule
+\textbf{After} \texttt{tokens[:,\,1:]} &
+  \textcolor{gray}{dropped} & $\underbrace{\texttt{"cat"}}_{\to\text{index }0}$ (2) &
+  $\underbrace{\texttt{"sat"}}_{\to\text{index }1}$ (3) &
+  $\underbrace{\texttt{"."}}_{\to\text{index }2}$ (4) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip\noindent
+The first token \texttt{"The"} is dropped because it is the starting token
+--- no earlier model output exists that should have predicted it as a
+\emph{next} token. What remains is the list of \textbf{ground-truth targets}:
+exactly the token each position $0, 1, \ldots, \text{posn}-2$ was supposed
+to predict.
+
+\medskip\noindent
+\textbf{Why the shapes now match.}
+After both slices:
+
+\[
+  \underbrace{\texttt{log\_probs[:, :-1]}}_{\text{shape }[\text{batch},\,\text{posn}-1,\,d_\text{vocab}]}
+  \quad\text{and}\quad
+  \underbrace{\texttt{tokens[:, 1:]}}_{\text{shape }[\text{batch},\,\text{posn}-1]}
+\]
+
+Both have the same $[\text{batch},\ \text{posn}-1]$ prefix.
+Position $i$ in \texttt{log\_probs[:, :-1]} holds the distribution the
+model produced at position $i$, and position $i$ in \texttt{tokens[:, 1:]}
+holds the correct token the model should have predicted at that
+position --- namely the token originally at position $i+1$.
+
+% =============================================
 \section{Diagram 1 --- Sequence Alignment and Slicing}
 % =============================================
 
