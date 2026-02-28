@@ -70,19 +70,19 @@ class TransformerTrainer:
         Evaluate the model on the test set and return the accuracy.
         """
         self.model.eval()
-        #
-        # YOUR CODE HERE - fill in the `evaluate` method
-        #
         accuracy = np.nan
         total_correct = 0
         for i, batch in enumerate(self.test_loader):
-            logits = self.model(batch["tokens"])
-            # pred_log_probs = get_log_probs(logits, batch["tokens"])
+            tokens = batch["tokens"].to(self.device)
+            logits = self.model(tokens)[
+                :, :-1
+            ]  # Remove last token since we're predicting next token
             pred_tokens = logits.argmax(dim=-1)
-            correct = (pred_tokens == batch["tokens"][:, 1:]).sum().item()
+            correct = (pred_tokens == tokens[:, 1:]).sum().item()
             total_correct += correct
 
         accuracy = total_correct / len(self.test_loader.dataset)
+        wandb.log({"test_accuracy": accuracy, "step": self.step})
         self.model.train()
         return accuracy
 
@@ -106,7 +106,7 @@ class TransformerTrainer:
                 if i >= self.args.max_steps_per_epoch:
                     break
 
-            # accuracy = self.evaluate()
+            accuracy = self.evaluate()
             sample_text = self.sampler.sample("Once upon a time", max_tokens_generated=50)
             print(sample_text)
 
