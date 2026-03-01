@@ -16,6 +16,7 @@ repos:
       - id: mixed-line-ending
         args: [--fix=lf]
       - id: debug-statements
+        exclude: ^tutorial/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.2

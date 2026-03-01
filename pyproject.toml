@@ -71,7 +71,7 @@ exclude_lines = [
 target-version = "py312"
 line-length = 100
 src = ["src", "tests"]
-exclude = [".venv", ".git", "__pycache__", "data", "*.ipynb"]
+exclude = [".venv", ".git", "__pycache__", "data", "*.ipynb", "tutorial"]
 
 [tool.ruff.lint]
 select = [
@@ -132,6 +132,7 @@ python_version = "3.12"
 mypy_path = "src"
 # Exclude: section narrative scripts (study code) and in-progress section3
 exclude = [
+    "tutorial/",
     "src/arena3/ch1_1/section3/",
     "src/arena3/ch0_2/section2/section2_training_neural_networks\\.py",
     "src/arena3/ch1_1/section1/section1_inputs_outputs_of_transformer\\.py",

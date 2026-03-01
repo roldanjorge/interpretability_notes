@@ -1,6 +1,7 @@
 # %%
 # imports
 import datasets
+import torch as t
 from torch.utils.data import DataLoader
 from transformer_lens import HookedTransformer
 from transformer_lens.utils import tokenize_and_concatenate
@@ -89,4 +90,16 @@ args = TransformerTrainingArgs()
 trainer = TransformerTrainer(args, model, reference_gpt2.tokenizer, dataset_dict)
 trainer.train()
 
+# %%
+# A note on the loss curve
+toks = tokenized_dataset[:]["tokens"].flatten()
+
+d_vocab = model.cfg.d_vocab
+freqs = t.bincount(toks, minlength=d_vocab)
+probs = freqs.float() / freqs.sum()
+
+distn = t.distributions.categorical.Categorical(probs=probs)
+entropy = distn.entropy()
+
+print(f"Entropy of training data = {entropy:.3f}")
 # %%
