@@ -615,6 +615,19 @@ wheels = [
 ]
 
 [[package]]
+name = "eindex-callum"
+version = "0.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "einops" },
+    { name = "torch" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/15/ef/d9ca9f21d24adb79514235516a2f34b2531835934da35c7259d6ab9e13ea/eindex-callum-0.1.2.tar.gz", hash = "sha256:b59837f8010c5545be12e28fdffac50ded1d3d0447d2e9000b63a96793b9495b", size = 8065, upload-time = "2024-07-12T07:43:12.35Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/43/cd/3477c50364d2984916fff1d6c8326fdadfa71207df4e2c534c0de62222b8/eindex_callum-0.1.2-py3-none-any.whl", hash = "sha256:d7519c80f897a83ed5a2f52d79ed664cc1f6c04d10419f11bfa6c9626f5c8f80", size = 8350, upload-time = "2024-07-12T07:43:10.8Z" },
+]
+
+[[package]]
 name = "einops"
 version = "0.8.2"
 source = { registry = "https://pypi.org/simple" }
@@ -918,6 +931,7 @@ dependencies = [
     { name = "circuitsvis" },
     { name = "datasets" },
     { name = "debugpy" },
+    { name = "eindex-callum" },
     { name = "einops" },
     { name = "ipykernel" },
     { name = "ipywidgets" },
@@ -950,6 +964,7 @@ requires-dist = [
     { name = "circuitsvis", specifier = ">=1.43.3" },
     { name = "datasets", specifier = ">=3.0.0" },
     { name = "debugpy", specifier = "==1.8.20" },
+    { name = "eindex-callum", specifier = ">=0.1.2" },
     { name = "einops", specifier = ">=0.8.2" },
     { name = "ipykernel", specifier = "==7.2.0" },
     { name = "ipywidgets", specifier = ">=8.1.8" },

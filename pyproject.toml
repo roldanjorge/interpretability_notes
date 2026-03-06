@@ -23,6 +23,7 @@ dependencies = [
     "torchinfo>=1.8.0",
     "torchvision>=0.25.0",
     "transformer-lens>=2.17.0",
+    "eindex-callum>=0.1.2",
 ]
 
 [dependency-groups]
