@@ -3,7 +3,7 @@
 import circuitsvis as cv
 from IPython.display import display
 import torch as t
-from transformer_lens import HookedTransformer, HookedTransformerConfig
+from transformer_lens import ActivationCache, HookedTransformer, HookedTransformerConfig
 
 from src.arena3.utils.device import device
 
@@ -82,4 +82,57 @@ for layer in range(model.cfg.n_layers):
 
 
 # %%
-#
+# Exercise - write your own detectors
+
+
+def current_attn_detector(cache: ActivationCache) -> list[str]:
+    """
+    Returns a list e.g. ["0.2", "1.4", "1.9"] of "layer.head" which you judge to be current-token heads
+    """
+    attn_heads = []
+    for layer in range(model.cfg.n_layers):
+        for head in range(model.cfg.n_heads):
+            attention_pattern = cache["pattern", layer][head]
+            # take avg of diagonal elements
+            score = attention_pattern.diagonal().mean()
+            if score > 0.4:
+                attn_heads.append(f"{layer}.{head}")
+    return attn_heads
+
+
+def prev_attn_detector(cache: ActivationCache) -> list[str]:
+    """
+    Returns a list e.g. ["0.2", "1.4", "1.9"] of "layer.head" which you judge to be prev-token heads
+    """
+    attn_heads = []
+    for layer in range(model.cfg.n_layers):
+        for head in range(model.cfg.n_heads):
+            attention_pattern = cache["pattern", layer][head]
+            # take avg of sub-diagonal elements
+            score = attention_pattern.diagonal(-1).mean()
+            if score > 0.4:
+                attn_heads.append(f"{layer}.{head}")
+    return attn_heads
+
+
+def first_attn_detector(cache: ActivationCache) -> list[str]:
+    """
+    Returns a list e.g. ["0.2", "1.4", "1.9"] of "layer.head" which you judge to be first-token heads
+    """
+    attn_heads = []
+    for layer in range(model.cfg.n_layers):
+        for head in range(model.cfg.n_heads):
+            attention_pattern = cache["pattern", layer][head]
+            # take avg of sub-diagonal elements
+            score = attention_pattern[:, 0].mean()
+            if score > 0.4:
+                attn_heads.append(f"{layer}.{head}")
+    return attn_heads
+
+
+print("Heads attending to current token  = ", ", ".join(current_attn_detector(cache)))
+print("Heads attending to previous token = ", ", ".join(prev_attn_detector(cache)))
+print("Heads attending to first token    = ", ", ".join(first_attn_detector(cache)))
+
+
+# %%
