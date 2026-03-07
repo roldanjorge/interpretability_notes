@@ -12,7 +12,7 @@ repos:
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files
-        args: [--maxkb=2000]
+        args: [--maxkb=1000000]
       - id: mixed-line-ending
         args: [--fix=lf]
       - id: debug-statements

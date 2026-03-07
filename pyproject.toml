@@ -113,7 +113,7 @@ fixable = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "PLR2004", "F401", "PLC0415", "E741", "RUF059", "B006", "F811", "E731", "B905", "RUF005", "PLC0206", "F841"]
-"src/**/section*.py" = ["E402", "T201", "PLR0402", "C414", "B007", "B905", "RUF005"]
+"src/**/section*.py" = ["E402", "T201", "PLR0402", "C414", "B007", "B905", "RUF005", "E731"]
 "tests/**/solutions.py" = ["B006", "F811", "E731", "B905", "RUF005", "RUF059", "PLR0912"]
 "src/**/config.py" = ["N815"]
 

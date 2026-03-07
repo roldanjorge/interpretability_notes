@@ -14,6 +14,10 @@ from src.arena3.ch1_2.plotly_utils import (
 from src.arena3.utils.device import device
 
 # %%
+# Setup MAIN
+MAIN = __name__ == "__main__"
+
+# %%
 # Setup config
 cfg = HookedTransformerConfig(
     d_model=768,
@@ -33,38 +37,40 @@ cfg = HookedTransformerConfig(
 
 # %%
 # Download models from Huggin Face
-from huggingface_hub import hf_hub_download
+if MAIN:
+    from huggingface_hub import hf_hub_download
 
-REPO_ID = "callummcdougall/attn_only_2L_half"
-FILENAME = "attn_only_2L_half.pth"
+    REPO_ID = "callummcdougall/attn_only_2L_half"
+    FILENAME = "attn_only_2L_half.pth"
 
-weights_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME)
+    weights_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME)
 
 # %%
 # Instantiate model
-model = HookedTransformer(cfg)
-pretrained_weights = t.load(weights_path, map_location=device, weights_only=True)
-model.load_state_dict(pretrained_weights)
+if MAIN:
+    model = HookedTransformer(cfg)
+    pretrained_weights = t.load(weights_path, map_location=device, weights_only=True)
+    model.load_state_dict(pretrained_weights)
 
 # %%
 # Exercise - visualise & inspect attention patterns
-text = "We think that powerful, significantly superhuman machine intelligence is more likely than not to be created this century. If current machine learning techniques were scaled up to this level, we think they would by default produce systems that are deceptive or manipulative, and that no solid plans are known for how to avoid this."
+if MAIN:
+    text = "We think that powerful, significantly superhuman machine intelligence is more likely than not to be created this century. If current machine learning techniques were scaled up to this level, we think they would by default produce systems that are deceptive or manipulative, and that no solid plans are known for how to avoid this."
 
-logits, cache = model.run_with_cache(text, remove_batch_dim=True)
+    logits, cache = model.run_with_cache(text, remove_batch_dim=True)
 
-# %%
-# Solution
-attention_pattern_0 = cache["pattern", 0]
-print(attention_pattern_0.shape)
-tokens = model.to_str_tokens(text)
+    # Solution
+    attention_pattern_0 = cache["pattern", 0]
+    print(attention_pattern_0.shape)
+    tokens = model.to_str_tokens(text)
 
-print("Layer 0 Head Attention Patterns:")
-display(
-    cv.attention.attention_patterns(
-        tokens=tokens,
-        attention=attention_pattern_0,
+    print("Layer 0 Head Attention Patterns:")
+    display(
+        cv.attention.attention_patterns(
+            tokens=tokens,
+            attention=attention_pattern_0,
+        )
     )
-)
 
 # %%
 # jr_solution
@@ -81,10 +87,11 @@ display(
 
 # %%
 # reference_solution
-str_tokens = model.to_str_tokens(text)
-for layer in range(model.cfg.n_layers):
-    attention_pattern = cache["pattern", layer]
-    display(cv.attention.attention_patterns(tokens=str_tokens, attention=attention_pattern))
+if MAIN:
+    str_tokens = model.to_str_tokens(text)
+    for layer in range(model.cfg.n_layers):
+        attention_pattern = cache["pattern", layer]
+        display(cv.attention.attention_patterns(tokens=str_tokens, attention=attention_pattern))
 
 
 # %%
@@ -136,9 +143,10 @@ def first_attn_detector(cache: ActivationCache) -> list[str]:
     return attn_heads
 
 
-print("Heads attending to current token  = ", ", ".join(current_attn_detector(cache)))
-print("Heads attending to previous token = ", ", ".join(prev_attn_detector(cache)))
-print("Heads attending to first token    = ", ", ".join(first_attn_detector(cache)))
+if MAIN:
+    print("Heads attending to current token  = ", ", ".join(current_attn_detector(cache)))
+    print("Heads attending to previous token = ", ", ".join(prev_attn_detector(cache)))
+    print("Heads attending to first token    = ", ", ".join(first_attn_detector(cache)))
 
 
 # %%
@@ -186,26 +194,28 @@ def get_log_probs(
 
 
 # %%
-seq_len = 50
-batch_size = 1
-(rep_tokens, rep_logits, rep_cache) = run_and_cache_model_repeated_tokens(
-    model, seq_len, batch_size
-)
-rep_cache.remove_batch_dim()
-rep_str = model.to_str_tokens(rep_tokens)
-model.reset_hooks()
-log_probs = get_log_probs(rep_logits, rep_tokens).squeeze()
+if MAIN:
+    seq_len = 50
+    batch_size = 1
+    (rep_tokens, rep_logits, rep_cache) = run_and_cache_model_repeated_tokens(
+        model, seq_len, batch_size
+    )
+    rep_cache.remove_batch_dim()
+    rep_str = model.to_str_tokens(rep_tokens)
+    model.reset_hooks()
+    log_probs = get_log_probs(rep_logits, rep_tokens).squeeze()
 
-print(f"Performance on the first half: {log_probs[:seq_len].mean():.3f}")
-print(f"Performance on the second half: {log_probs[seq_len:].mean():.3f}")
+    print(f"Performance on the first half: {log_probs[:seq_len].mean():.3f}")
+    print(f"Performance on the second half: {log_probs[seq_len:].mean():.3f}")
 
-plot_loss_difference(log_probs, rep_str, seq_len)
+    plot_loss_difference(log_probs, rep_str, seq_len)
 
 # %%
 # Display attention
-for layer in range(model.cfg.n_layers):
-    attention_pattern = rep_cache["pattern", layer]
-    display(cv.attention.attention_patterns(tokens=rep_str, attention=attention_pattern))
+if MAIN:
+    for layer in range(model.cfg.n_layers):
+        attention_pattern = rep_cache["pattern", layer]
+        display(cv.attention.attention_patterns(tokens=rep_str, attention=attention_pattern))
 
 
 # %%
@@ -228,6 +238,7 @@ def induction_attn_detector(cache: ActivationCache) -> list[str]:
     return attn_heads
 
 
-print("Induction heads = ", ", ".join(induction_attn_detector(rep_cache)))
+if MAIN:
+    print("Induction heads = ", ", ".join(induction_attn_detector(rep_cache)))
 
 # %%
