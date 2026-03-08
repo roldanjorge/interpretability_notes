@@ -9,7 +9,7 @@ from torch import Tensor
 from transformer_lens import HookedTransformer
 from transformer_lens.hook_points import HookPoint
 
-from src.arena3.ch1_2.plotly_utils import imshow
+from src.arena3.ch1_2.plotly_utils import imshow, plot_logit_attribution
 from src.arena3.ch1_2.section2.section2_finding_induction_heads import cfg, generate_repeated_tokens
 from src.arena3.utils.device import device
 
@@ -198,5 +198,30 @@ if MAIN:
         correct_token_logits = logits[0, t.arange(len(tokens[0]) - 1), tokens[0, 1:]]
         t.testing.assert_close(logit_attr.sum(1), correct_token_logits, atol=1e-3, rtol=0)
         print("Tests passed!")
+
+# %%
+# Visualize
+if MAIN:
+    embed = cache["embed"]
+    l1_results = cache["result", 0]
+    l2_results = cache["result", 1]
+    logit_attr = logit_attribution(embed, l1_results, l2_results, model.W_U, tokens.squeeze())
+
+    plot_logit_attribution(model, logit_attr, tokens, title="Logit attribution (demo prompt)")
+
+
+# %%
+# Exercise - interpret logit attribution for the induction heads
+if MAIN:
+    batch_size = 1
+    rep_tokens = generate_repeated_tokens(model, seq_len, batch_size=1)
+
+    logits, cache = model.run_with_cache(rep_tokens, remove_batch_dim=True)
+
+    embed = cache["embed"]
+    l1_results = cache["result", 0]
+    l2_results = cache["result", 1]
+    logit_attr = logit_attribution(embed, l1_results, l2_results, model.W_U, rep_tokens.squeeze())
+    plot_logit_attribution(model, logit_attr, rep_tokens, title="Logit attribution (demo prompt)")
 
 # %%
